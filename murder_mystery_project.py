@@ -95,3 +95,5 @@ def find_text_similarity(TextSample1,TextSample2):
 print('Lily\'s similarity score is: ' + str(find_text_similarity(murderer_sample,lily_sample)))
 print('Gregg\'s similarity score is: ' + str(find_text_similarity(murderer_sample,gregg_sample)))
 print('Myrtle\'s similarity score is: ' + str(find_text_similarity(murderer_sample,myrtle_sample)))
+
+print('Lily is the murderer')
