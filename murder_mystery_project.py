@@ -6,9 +6,7 @@ gregg_t_fishy_intro = "A good day to you all, I am Gregg T Fishy, of the Fishy E
 def get_average_sentence_length(text):
     total_len = 0
     sent_lens = []
-    #can't remember how to replace on multiple separators
-    no_exclam = text.replace("!",'.')
-    standard_punct = no_exclam.replace("?",'.').strip(' ')
+    standard_punct = text.replace("!",'.').replace("?",'.').strip(' ')
     sentences = standard_punct.split('.')
     for sentence in sentences:
         sent_len = len(sentence)
@@ -23,28 +21,77 @@ def prepare_text(text):
     prepared_text = just_words.split(' ')
     return prepared_text
 
+def build_frequency_table(corpus):
+    frequency_table = {}
+    for element in corpus:
+        count = corpus.count(element)
+        frequency_table[element] = count
+    return frequency_table
+
+def frequency_comparison(table1,table2):
+    appearances = 0
+    mutual_appearances = 0
+    for key,value in table1.items():
+        if key in list(table2.keys()):
+            if table2[key] >= value:
+                appearances += table2[key]
+                mutual_appearances += value
+            else:
+                appearances += value
+                mutual_appearances += table2[key]
+        elif key not in list(table2.keys()):
+            appearances += value
+    for key2,value2 in table2.items():
+        if key2 in list(table1.keys()):
+            pass
+        elif key2 not in list(table1.keys()):
+            appearances += value2
+    frequency_comparison_score = mutual_appearances / (mutual_appearances + appearances)
+    return frequency_comparison_score
+
+def ngram_creator(text_list):
+    word_pairs = []
+    i = 0
+    while i < (len(text_list)-1):
+        for word in text_list:
+            if i+1 == len(text_list):
+                break
+            else:
+                next_word = text_list[(i+1)%len(text_list)]
+                word_pair = str(word + ' ' + next_word)
+                word_pairs.append(word_pair)
+                i = i + 1
+    return word_pairs
+
+def percent_difference(TextSample1,TextSample2):
+    value1 = TextSample1.average_sentence_length
+    value2 = TextSample2.average_sentence_length
+    return (abs(value1 - value2))/((value1 + value2)/2)
+
 class TextSample:
     def __init__(self, text, author):
         self.raw_text = text
         self.author = author
-        self.average_sentence_length = str(get_average_sentence_length(text))
+        self.average_sentence_length = get_average_sentence_length(text)
+        self.prepared_text = prepare_text(text)
+        self.word_count_frequency = build_frequency_table(self.prepared_text)
+        self.ngram_frequency = build_frequency_table(ngram_creator(self.prepared_text))
     def __repr__(self):
-        return self.author + ' // Average Sentence Length = ' + self.average_sentence_length
+        return 'Author: ' + self.author + ' // Average Sentence Length: ' + str(self.average_sentence_length)
 
 murderer_sample = TextSample(murder_note, 'Murderer')
 lily_sample = TextSample(lily_trebuchet_intro, 'Lily Trebuchet')
 myrtle_sample = TextSample(myrtle_beech_intro, 'Myrtle Beech')
 gregg_sample = TextSample(gregg_t_fishy_intro, 'Gregg T Fishy')
 
-print(murderer_sample)
-print(lily_sample)
-print(myrtle_sample)
-print(gregg_sample)
+def find_text_similarity(TextSample1,TextSample2):
+    sentence_length_difference = percent_difference(TextSample1,TextSample2)##this isn't used for later calculation
+    sentence_length_similarity = abs(1 - sentence_length_difference)
+    word_count_similarity = frequency_comparison(TextSample1.word_count_frequency,TextSample2.word_count_frequency)
+    ngram_similarity = frequency_comparison(TextSample1.ngram_frequency,TextSample2.ngram_frequency)
+    similarity_score = (sentence_length_similarity + word_count_similarity + ngram_similarity) / 3
+    return similarity_score
 
-
-
-#print(prepare_text(murder_note))
-#print(get_average_sentence_length(murder_note))
-#print(get_average_sentence_length(lily_trebuchet_intro))
-#print(get_average_sentence_length(myrtle_beech_intro))
-#print(get_average_sentence_length(gregg_t_fishy_intro))
+print('Lily\'s similarity score is: ' + str(find_text_similarity(murderer_sample,lily_sample)))
+print('Gregg\'s similarity score is: ' + str(find_text_similarity(murderer_sample,gregg_sample)))
+print('Myrtle\'s similarity score is: ' + str(find_text_similarity(murderer_sample,myrtle_sample)))
